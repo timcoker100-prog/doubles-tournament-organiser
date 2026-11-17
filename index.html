@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Doubles Tournament Organiser</title>
+<style>
+  :root {
+    --ink: #16231F;
+    --green: #1F3A2E;
+    --green-dark: #16291F;
+    --accent: #D7E24B;
+    --clay: #B0523A;
+    --muted: #6B7A72;
+    --muted-light: #8A9188;
+    --border: #E4E1D6;
+    --stripe: #F5F3EC;
+    --bg: #FAFAF7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .header {
+    background: var(--green);
+    color: var(--bg);
+    padding: 28px 20px 32px;
+  }
+  .header .inner { max-width: 900px; margin: 0 auto; }
+  .bar { width: 56px; height: 4px; background: var(--accent); margin-bottom: 14px; }
+  h1 { font-size: 28px; margin: 0; font-weight: 700; letter-spacing: -0.02em; }
+  .sub { margin-top: 8px; color: #C7D6CC; font-size: 14px; max-width: 520px; line-height: 1.5; }
+
+  .controls {
+    max-width: 900px;
+    margin: -20px auto 0;
+    padding: 0 20px;
+  }
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .field label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .editable-tag {
+    background: var(--accent);
+    color: var(--green-dark);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 8px;
+  }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .stepper {
+    display: flex;
+    align-items: stretch;
+    border: 2px solid var(--green);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #F2F7F1;
+    width: fit-content;
+  }
+  .step-btn {
+    background: var(--green);
+    color: white;
+    border: none;
+    font-size: 18px;
+    font-weight: 700;
+    width: 34px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+  .step-btn:active { background: var(--green-dark); }
+  .stepper input[type=number] {
+    width: 64px;
+    border: none;
+    background: transparent;
+    padding: 8px 4px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green);
+    text-align: center;
+    -moz-appearance: textfield;
+  }
+  .stepper input[type=number]::-webkit-outer-spin-button,
+  .stepper input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .stepper input[type=number]:focus {
+    outline: none;
+    background: white;
+  }
+  textarea {
+    width: 100%;
+    border: 1px solid #D7D2C2;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    resize: vertical;
+  }
+  .hint { font-size: 12px; color: var(--muted); }
+  button {
+    background: var(--green);
+    color: white;
+    border: none;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 11px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:active { background: var(--green-dark); }
+
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-secondary {
+    background: white;
+    color: var(--green);
+    border: 2px solid var(--green);
+  }
+  .btn-secondary:active { background: #EEF3EF; }
+  .btn-danger {
+    background: white;
+    color: var(--clay);
+    border: 2px solid var(--clay);
+  }
+  .btn-danger:active { background: #FBEEEB; }
+  .save-status {
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 600;
+    min-height: 16px;
+  }
+
+
+  .help-box {
+    max-width: 900px;
+    margin: 12px auto 0;
+    padding: 0 20px;
+  }
+  .help-box details {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0 16px;
+  }
+  .help-box summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--green);
+    padding: 12px 0;
+    list-style: none;
+  }
+  .help-box summary::-webkit-details-marker { display: none; }
+  .help-box summary::before { content: "\25B8  "; }
+  .help-box details[open] summary::before { content: "\25BE  "; }
+  .help-content { font-size: 13px; line-height: 1.6; color: #2A3A33; padding: 0 0 14px; }
+  .help-content h3 { font-size: 13px; margin: 14px 0 4px; color: var(--green); }
+  .help-content ol, .help-content ul { margin: 4px 0 4px 18px; padding: 0; }
+  .help-content li { margin-bottom: 4px; }
+
+  .top-actions {
+    max-width: 900px;
+    margin: 20px auto 0;
+    padding: 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  .top-actions-hint {
+    width: 100%;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .body { max-width: 900px; margin: 0 auto; padding: 24px 20px 60px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  .stat {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    min-width: 130px;
+  }
+  .stat .label { font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.03em; }
+  .stat .value { font-size: 20px; font-weight: 700; margin-top: 2px; color: var(--green); }
+  .stat .value.bad { color: var(--clay); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .table-wrap { background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; overflow-x: auto; }
+  thead tr { background: var(--green); color: white; text-align: left; }
+  th { padding: 10px 12px; font-weight: 600; white-space: nowrap; }
+  td { padding: 10px 12px; vertical-align: top; }
+  tr.stripe { background: var(--stripe); }
+  .vs { color: var(--clay); font-weight: 700; margin: 0 5px; }
+  .resting { color: var(--muted); }
+  .idle { color: var(--muted); font-style: italic; }
+  .note { font-size: 12px; color: var(--muted-light); margin-top: 14px; line-height: 1.5; }
+  .empty { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 24px; color: var(--muted); font-size: 14px; }
+
+  .court-cell { display: flex; flex-direction: column; gap: 6px; }
+  .matchup { white-space: nowrap; }
+  .score-row { display: flex; align-items: center; gap: 6px; }
+  input.score-input {
+    width: 52px;
+    font-size: 13px;
+    padding: 4px 6px;
+    border: 1px solid #D7D2C2;
+    border-radius: 5px;
+    text-align: center;
+  }
+  input.score-input:focus { outline: none; border-color: var(--green); }
+  .score-dash { color: var(--muted); font-weight: 600; }
+
+  .standings-title { font-size: 16px; font-weight: 700; margin: 28px 0 10px; color: var(--green); }
+  .standings-wrap { background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .standings-wrap table { font-size: 13px; }
+  .standings-wrap th { background: var(--green); color: white; }
+  .rank { color: var(--muted); width: 30px; }
+  .win-count { font-weight: 700; color: var(--green); }
+  .leader { color: var(--clay); font-weight: 700; }
+  .rank-1 { color: #B8860B; font-weight: 700; }
+  .rank-2 { color: #708090; font-weight: 700; }
+  .rank-3 { color: #A0522D; font-weight: 700; }
+  .rank-4 { color: #2E7D6B; font-weight: 700; }
+  .rank-5 { color: #6A5ACD; font-weight: 700; }
+  .rank-6 { color: #4A7CA8; font-weight: 700; }
+  .medal { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .rank-1 .medal { background: #B8860B; }
+  .rank-2 .medal { background: #708090; }
+  .rank-3 .medal { background: #A0522D; }
+  .rank-4 .medal { background: #2E7D6B; }
+  .rank-5 .medal { background: #6A5ACD; }
+  .rank-6 .medal { background: #4A7CA8; }
+  .position-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 9px;
+    background: currentColor;
+    color: white !important;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .position-badge.rank-1 { background: #B8860B; }
+  .position-badge.rank-2 { background: #708090; }
+  .position-badge.rank-3 { background: #A0522D; }
+  .position-badge.rank-4 { background: #2E7D6B; }
+  .position-badge.rank-5 { background: #6A5ACD; }
+  .position-badge.rank-6 { background: #4A7CA8; }
+
+  .matchup-box {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+  .matchup-box-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); margin-bottom: 10px; }
+  .matchup-empty { font-size: 13px; color: var(--muted); }
+  .matchup-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .matchup-row:first-of-type { border-top: none; }
+  .matchup-count {
+    margin-left: auto;
+    background: var(--clay);
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="top-actions">
+  <button id="downloadTool" class="btn-secondary">⬇ Save a copy to share (.html)</button>
+  <div class="hint top-actions-hint">Save this as a single file you can send to anyone — they just open it in any web browser (phone or computer). No install, no sign-up, works offline.</div>
+</div>
+
+<div class="help-box">
+  <details>
+    <summary>How to use this tool</summary>
+    <div class="help-content">
+      <h3>Setting up</h3>
+      <ol>
+        <li>Choose the <strong>number of players</strong>, <strong>rounds</strong> and <strong>courts</strong> (1 to 6) using the + and &minus; buttons, or type a number directly.</li>
+        <li>Type your players' names into the <strong>Player names</strong> box, one name per line. The schedule rebuilds as you type.</li>
+        <li>Not happy with the pairings? Press <strong>Reshuffle</strong> for a fresh arrangement.</li>
+      </ol>
+
+      <h3>Reading the schedule</h3>
+      <ul>
+        <li>Each round shows who plays on each court. Anyone not listed on a court is under <strong>Resting</strong> for that round.</li>
+        <li>The schedule aims to give everyone a new partner and new opponents each round, and to share rest time evenly. The boxes at the top show how well it managed. Zero repeat partnerships is ideal.</li>
+        <li>If you have more courts than the players can fill (you need 4 players per court), only the courts that can be filled are used.</li>
+      </ul>
+
+      <h3>What the boxes mean</h3>
+      <ul>
+        <li><strong>Repeat partnerships</strong> &ndash; how many times two players ended up on the same team more than once. Each extra time counts as 1. Zero means everyone had a different partner every time.</li>
+        <li><strong>Repeat opponent pairs</strong> &ndash; how many times two individual players faced each other across the net after the first time, whoever their partners were. If two players are on opposite sides in three different rounds, that adds 2. With many rounds and few players this can't be zero. For example, 12 players over 12 rounds on 2 courts has a minimum of 30, so a figure close to that is as good as it gets.</li>
+        <li><strong>Rest-count spread</strong> &ndash; the gap between the player who has rested most and the player who has rested least. Zero means everyone rests the same number of rounds. 1 is the best possible when rest can't be split exactly evenly.</li>
+        <li><strong>Courts used per round</strong> &ndash; how many courts are in use each round. It is lower than the number you chose if there aren't enough players to fill every court (4 players per court).</li>
+        <li><strong>Repeat pair matchups</strong> &ndash; lists any two-person team that played the same two-person opposing team more than once, with the number of times (for example &times;2). If nothing is listed, no team has met the same opposing team twice.</li>
+        <li><strong>Times each player faced the same opposing pair again</strong> &ndash; for each player, how many times they played against the same two opponents as a pair more than once, even if their own partner was different. If nothing is listed, nobody has faced the same opposing pair twice.</li>
+      </ul>
+
+      <h3>Scoring</h3>
+      <ul>
+        <li>Enter the points each team won in the two small boxes under each match. Every player on a team gets those points added to their own total.</li>
+        <li>The <strong>Standings</strong> table at the bottom updates as you go. The top 6 are highlighted and labelled 1st to 6th. Players on equal points share a position.</li>
+        <li><strong>Played</strong> counts only matches that have a score entered.</li>
+      </ul>
+
+      <h3>Saving and resetting</h3>
+      <ul>
+        <li><strong>Save results</strong> stores your schedule, names and scores on this device, so they are still here if you close the page and come back. Nothing is sent anywhere, so other people cannot see your tournament.</li>
+        <li><strong>Reset</strong> clears all scores but keeps the same pairings.</li>
+        <li>Changing the number of players, rounds, courts or names, or pressing Reshuffle, creates a new schedule and clears any scores. Set these up before the tournament starts.</li>
+      </ul>
+
+      <h3>Sharing this tool</h3>
+      <ul>
+        <li>Press <strong>Save a copy to share</strong> to download a blank copy as a single file. Send it to anyone and they can open it in any web browser, on a phone or computer, with no install or sign-up. Each person's tournament stays separate.</li>
+      </ul>
+    </div>
+  </details>
+</div>
+
+<div class="header">
+  <div class="inner">
+    <div class="bar"></div>
+    <h1>Doubles Tournament Organiser</h1>
+    <div class="sub">Fair pairings across your available courts — every round tries to give people a new partner and new opponents, and spreads rest evenly when not everyone can play.</div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="card">
+    <div class="row">
+      <div class="field">
+        <label>Number of players <span class="editable-tag">editable</span></label>
+        <div class="stepper">
+          <button type="button" class="step-btn" data-target="playerCount" data-delta="-1" aria-label="Decrease players">−</button>
+          <input type="number" id="playerCount" min="0" value="12" />
+          <button type="button" class="step-btn" data-target="playerCount" data-delta="1" aria-label="Increase players">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Rounds <span class="editable-tag">editable</span></label>
+        <div class="stepper">
+          <button type="button" class="step-btn" data-target="rounds" data-delta="-1" aria-label="Decrease rounds">−</button>
+          <input type="number" id="rounds" min="1" max="30" value="12" />
+          <button type="button" class="step-btn" data-target="rounds" data-delta="1" aria-label="Increase rounds">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Courts <span class="editable-tag">editable</span></label>
+        <div class="stepper">
+          <button type="button" class="step-btn" data-target="courts" data-delta="-1" aria-label="Decrease courts">−</button>
+          <input type="number" id="courts" min="1" max="6" value="2" />
+          <button type="button" class="step-btn" data-target="courts" data-delta="1" aria-label="Increase courts">+</button>
+        </div>
+      </div>
+      <div class="field" style="align-self:flex-end;">
+        <div class="btn-row">
+          <button id="reshuffle">Reshuffle</button>
+          <button id="saveResults" class="btn-secondary">Save results</button>
+          <button id="resetAll" class="btn-danger">Reset</button>
+        </div>
+      </div>
+    </div>
+    <div id="saveStatus" class="save-status"></div>
+    <div class="field">
+      <label>Player names (one per line — edit freely)</label>
+      <textarea id="names" rows="6"></textarea>
+      <div class="hint">Courts can be set from 1 to 6 above.</div>
+    </div>
+  </div>
+</div>
+
+<div class="body">
+  <div id="output"></div>
+</div>
+
+<script>
+const ORIGINAL_HTML = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+function pKey(a, b) { return a < b ? a + "," + b : b + "," + a; }
+
+function buildAttempt(n, rounds, courtsUsed, activeCount) {
+  const partnerCount = {};
+  const oppCount = {};
+  const sitOut = new Array(n).fill(0);
+
+  const getP = (a, b) => partnerCount[pKey(a, b)] || 0;
+  const getO = (a, b) => oppCount[pKey(a, b)] || 0;
+  const incP = (a, b) => { const k = pKey(a, b); partnerCount[k] = (partnerCount[k] || 0) + 1; };
+  const incO = (a, b) => { const k = pKey(a, b); oppCount[k] = (oppCount[k] || 0) + 1; };
+
+  const scheduleRounds = [];
+
+  for (let r = 0; r < rounds; r++) {
+    const idx = [...Array(n).keys()];
+    idx.sort((a, b) => sitOut[a] - sitOut[b] || Math.random() - 0.5);
+    const numSit = n - activeCount;
+    const sitting = idx.slice(0, numSit);
+    const activePlayers = idx.slice(numSit);
+    sitting.forEach((p) => sitOut[p]++);
+
+    let bestArrangement = null;
+    let bestScore = Infinity;
+    const trials = 350;
+
+    for (let t = 0; t < trials; t++) {
+      const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
+      const groups = [];
+      for (let c = 0; c < courtsUsed; c++) groups.push(shuffled.slice(c * 4, c * 4 + 4));
+
+      let totalScore = 0;
+      const courtResults = [];
+      for (const g of groups) {
+        const [a, b, c, d] = g;
+        const options = [
+          [[a, b], [c, d]],
+          [[a, c], [b, d]],
+          [[a, d], [b, c]],
+        ];
+        let localBest = null;
+        let localBestScore = Infinity;
+        for (const [team1, team2] of options) {
+          const score =
+            getP(team1[0], team1[1]) * 10 +
+            getP(team2[0], team2[1]) * 10 +
+            getO(team1[0], team2[0]) + getO(team1[0], team2[1]) +
+            getO(team1[1], team2[0]) + getO(team1[1], team2[1]);
+          if (score < localBestScore) { localBestScore = score; localBest = [team1, team2]; }
+        }
+        totalScore += localBestScore;
+        courtResults.push(localBest);
+      }
+
+      if (totalScore < bestScore) { bestScore = totalScore; bestArrangement = courtResults; }
+    }
+
+    const roundCourts = [];
+    bestArrangement.forEach(([team1, team2]) => {
+      incP(team1[0], team1[1]);
+      incP(team2[0], team2[1]);
+      incO(team1[0], team2[0]); incO(team1[0], team2[1]);
+      incO(team1[1], team2[0]); incO(team1[1], team2[1]);
+      roundCourts.push({ team1, team2 });
+    });
+
+    scheduleRounds.push({ courts: roundCourts, sitting });
+  }
+
+  let partnerRepeats = 0;
+  Object.values(partnerCount).forEach((v) => { if (v > 1) partnerRepeats += v - 1; });
+  let oppRepeats = 0;
+  Object.values(oppCount).forEach((v) => { if (v > 1) oppRepeats += v - 1; });
+  const sitSpread = (sitOut.length ? Math.max(...sitOut) - Math.min(...sitOut) : 0);
+
+  const badness = partnerRepeats * 10 + oppRepeats + sitSpread * 5;
+  return { scheduleRounds, partnerRepeats, oppRepeats, sitSpread, badness };
+}
+
+function generateSchedule(n, rounds, courtsAvailable) {
+  if (n < 4) return null;
+  const courtsUsed = Math.min(courtsAvailable, Math.floor(n / 4));
+  const activeCount = courtsUsed * 4;
+  const attempts = n <= 8 ? 14 : 20;
+
+  let best = null;
+  for (let i = 0; i < attempts; i++) {
+    const res = buildAttempt(n, rounds, courtsUsed, activeCount);
+    if (!best || res.badness < best.badness) best = res;
+  }
+  return Object.assign({}, best, { courtsUsed, activeCount, courtsAvailable });
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+const STORAGE_KEY = 'doubles_tournament_organiser_v1';
+let currentResult = null;
+let currentNames = [];
+let matchResults = {}; // key: `${roundIndex}-${courtIndex}` -> "1" | "2" | ""
+
+function generateAndRenderNew() {
+  const namesRaw = document.getElementById('names').value;
+  const names = namesRaw.split('\n').map(s => s.trim()).filter(Boolean);
+  const n = names.length;
+  const rounds = Math.max(1, parseInt(document.getElementById('rounds').value, 10) || 1);
+  const courtsAvailable = Math.min(6, Math.max(1, parseInt(document.getElementById('courts').value, 10) || 1));
+
+  const output = document.getElementById('output');
+
+  if (n < 4) {
+    output.innerHTML = '<div class="empty">Add at least 4 names to build a schedule.</div>';
+    currentResult = null;
+    return;
+  }
+
+  const result = generateSchedule(n, rounds, courtsAvailable);
+  matchResults = {}; // new schedule -> old results no longer apply
+  localStorage.removeItem(STORAGE_KEY);
+  renderScheduleUI(result, names);
+}
+
+function renderScheduleUI(result, names) {
+  currentResult = result;
+  currentNames = names;
+
+  const output = document.getElementById('output');
+
+  let html = '<div class="stats">';
+  html += statHtml('Repeat partnerships', result.partnerRepeats, result.partnerRepeats === 0);
+  html += statHtml('Repeat opponent pairs', result.oppRepeats, result.oppRepeats === 0);
+  html += statHtml('Rest-count spread', result.sitSpread, result.sitSpread <= 1);
+  html += statHtml('Courts used per round', result.courtsUsed, true);
+  html += '</div>';
+
+  const repeatMatchups = computeRepeatMatchups(result.scheduleRounds);
+  html += '<div class="matchup-box">';
+  html += '<div class="matchup-box-title">Repeat pair matchups</div>';
+  if (repeatMatchups.length === 0) {
+    html += '<div class="matchup-empty">No two-person team has faced the same opposing team more than once.</div>';
+  } else {
+    repeatMatchups.forEach((m) => {
+      const teamA = m.teamA.map(p => escapeHtml(names[p])).join(' &amp; ');
+      const teamB = m.teamB.map(p => escapeHtml(names[p])).join(' &amp; ');
+      html += '<div class="matchup-row"><span>' + teamA + '</span><span class="vs">vs</span><span>' + teamB + '</span><span class="matchup-count">&times;' + m.count + '</span></div>';
+    });
+  }
+  html += '</div>';
+
+  const playerRepeats = computePlayerPairRepeats(result.scheduleRounds, names.length);
+  const anyPlayerRepeats = playerRepeats.some((r) => r.repeats > 0);
+  html += '<div class="matchup-box">';
+  html += '<div class="matchup-box-title">Times each player faced the same opposing pair again</div>';
+  if (!anyPlayerRepeats) {
+    html += '<div class="matchup-empty">No individual player has faced the same opposing pair more than once.</div>';
+  } else {
+    playerRepeats
+      .filter((r) => r.repeats > 0)
+      .sort((a, b) => b.repeats - a.repeats || a.player - b.player)
+      .forEach((r) => {
+        html += '<div class="matchup-row"><span>' + escapeHtml(names[r.player]) + '</span><span class="matchup-count">&times;' + r.repeats + '</span></div>';
+      });
+  }
+  html += '</div>';
+
+  if (result.courtsUsed < result.courtsAvailable) {
+    html += '<div class="matchup-box">';
+    html += '<div class="matchup-empty">Only ' + result.courtsUsed + ' of ' + result.courtsAvailable + ' available court' + (result.courtsAvailable > 1 ? 's' : '') + ' ' + (result.courtsUsed === 1 ? 'is' : 'are') + ' being used each round — not enough active players to fill more courts.</div>';
+    html += '</div>';
+  }
+
+  html += '<div class="table-wrap"><table><thead><tr><th>Round</th>';
+  for (let c = 1; c <= result.courtsUsed; c++) html += '<th>Court ' + c + '</th>';
+  html += '<th>Resting</th></tr></thead><tbody>';
+
+  result.scheduleRounds.forEach((round, i) => {
+    html += '<tr class="' + (i % 2 === 1 ? 'stripe' : '') + '">';
+    html += '<td><strong>' + (i + 1) + '</strong></td>';
+    round.courts.forEach((court, ci) => {
+      const t1 = court.team1.map(p => escapeHtml(names[p])).join(' &amp; ');
+      const t2 = court.team2.map(p => escapeHtml(names[p])).join(' &amp; ');
+      const key = i + '-' + ci;
+      const saved = matchResults[key] || {};
+      const v1 = saved.team1 !== undefined ? saved.team1 : '';
+      const v2 = saved.team2 !== undefined ? saved.team2 : '';
+      html += '<td><div class="court-cell">';
+      html += '<div class="matchup">' + t1 + '<span class="vs">vs</span>' + t2 + '</div>';
+      html += '<div class="score-row">';
+      html += '<input type="number" class="score-input" min="0" placeholder="0" value="' + v1 + '" data-round="' + i + '" data-court="' + ci + '" data-team="team1">';
+      html += '<span class="score-dash">–</span>';
+      html += '<input type="number" class="score-input" min="0" placeholder="0" value="' + v2 + '" data-round="' + i + '" data-court="' + ci + '" data-team="team2">';
+      html += '</div>';
+      html += '</div></td>';
+    });
+    const resting = round.sitting.length ? round.sitting.map(p => escapeHtml(names[p])).join(', ') : '—';
+    html += '<td class="resting">' + resting + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  html += '<div class="note">Schedule is generated with randomized search each time you hit Reshuffle — with more players relative to rounds, some repeat partnerships or opponents become mathematically unavoidable; the stats above show how close this run got to zero.</div>';
+
+  html += '<div class="standings-title">Standings</div>';
+  html += '<div id="standings"></div>';
+
+  output.innerHTML = html;
+  renderStandings();
+}
+
+function renderStandings() {
+  const el = document.getElementById('standings');
+  if (!el || !currentResult) return;
+
+  const points = new Array(currentNames.length).fill(0);
+  const played = new Array(currentNames.length).fill(0);
+
+  currentResult.scheduleRounds.forEach((round, ri) => {
+    round.courts.forEach((court, ci) => {
+      const key = ri + '-' + ci;
+      const scores = matchResults[key];
+      if (scores) {
+        const s1 = scores.team1 !== undefined && scores.team1 !== '' ? Number(scores.team1) : null;
+        const s2 = scores.team2 !== undefined && scores.team2 !== '' ? Number(scores.team2) : null;
+        const hasScore = (s1 !== null && !isNaN(s1)) || (s2 !== null && !isNaN(s2));
+        if (hasScore) {
+          [...court.team1, ...court.team2].forEach(p => played[p]++);
+          if (s1 !== null && !isNaN(s1)) court.team1.forEach(p => points[p] += s1);
+          if (s2 !== null && !isNaN(s2)) court.team2.forEach(p => points[p] += s2);
+        }
+      }
+    });
+  });
+
+  const rows = currentNames.map((name, i) => ({ name, points: points[i], played: played[i], num: i + 1 }));
+
+  const ranked = [...rows]
+    .filter(r => r.points > 0)
+    .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+
+  function ordinalOf(n) {
+    const v = n % 100;
+    if (v >= 11 && v <= 13) return n + 'th';
+    switch (n % 10) {
+      case 1: return n + 'st';
+      case 2: return n + 'nd';
+      case 3: return n + 'rd';
+      default: return n + 'th';
+    }
+  }
+
+  const rankClassByNum = {};
+  const positionByNum = {};
+  let lastPoints = null;
+  let lastRankValue = 0;
+  ranked.forEach((r, idx) => {
+    const rankValue = (r.points === lastPoints) ? lastRankValue : idx + 1;
+    lastPoints = r.points;
+    lastRankValue = rankValue;
+    if (rankValue <= 6) {
+      rankClassByNum[r.num] = 'rank-' + Math.min(rankValue, 6);
+      positionByNum[r.num] = ordinalOf(rankValue);
+    }
+  });
+
+  let html = '<div class="standings-wrap"><table><thead><tr><th class="rank">#</th><th>Player</th><th>Points</th><th>Played</th></tr></thead><tbody>';
+  rows.forEach((r, i) => {
+    const rankClass = rankClassByNum[r.num] || '';
+    const position = positionByNum[r.num];
+    html += '<tr class="' + (i % 2 === 1 ? 'stripe' : '') + '">';
+    html += '<td class="rank">' + r.num + '</td>';
+    html += '<td class="' + rankClass + '">' + (rankClass ? '<span class="medal"></span>' : '') + escapeHtml(r.name) + (position ? ' <span class="position-badge ' + rankClass + '">' + position + '</span>' : '') + '</td>';
+    html += '<td class="win-count">' + r.points + '</td>';
+    html += '<td>' + r.played + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function teamKey(team) {
+  return [...team].sort((a, b) => a - b).join('-');
+}
+
+function matchupKey(teamA, teamB) {
+  const ka = teamKey(teamA), kb = teamKey(teamB);
+  return ka < kb ? ka + '|' + kb : kb + '|' + ka;
+}
+
+function computeRepeatMatchups(scheduleRounds) {
+  const counts = {}; // key -> { teamA, teamB, count }
+  scheduleRounds.forEach((round) => {
+    round.courts.forEach((court) => {
+      const key = matchupKey(court.team1, court.team2);
+      if (!counts[key]) counts[key] = { teamA: court.team1, teamB: court.team2, count: 0 };
+      counts[key].count++;
+    });
+  });
+  return Object.values(counts)
+    .filter((m) => m.count > 1)
+    .sort((a, b) => b.count - a.count);
+}
+
+function computePlayerPairRepeats(scheduleRounds, n) {
+  const perPlayerPairCount = Array.from({ length: n }, () => ({}));
+  scheduleRounds.forEach((round) => {
+    round.courts.forEach((court) => {
+      const t1key = teamKey(court.team1);
+      const t2key = teamKey(court.team2);
+      court.team1.forEach((p) => { perPlayerPairCount[p][t2key] = (perPlayerPairCount[p][t2key] || 0) + 1; });
+      court.team2.forEach((p) => { perPlayerPairCount[p][t1key] = (perPlayerPairCount[p][t1key] || 0) + 1; });
+    });
+  });
+  return perPlayerPairCount.map((counts, i) => {
+    let repeats = 0;
+    Object.values(counts).forEach((c) => { if (c > 1) repeats += c - 1; });
+    return { player: i, repeats };
+  });
+}
+
+function statHtml(label, value, good) {
+  return '<div class="stat"><div class="label">' + label + '</div><div class="value ' + (good ? '' : 'bad') + '">' + value + '</div></div>';
+}
+
+function defaultName(i) {
+  return 'Player ' + (i + 1);
+}
+
+function initNames() {
+  const count = parseInt(document.getElementById('playerCount').value, 10) || 0;
+  const arr = [];
+  for (let i = 0; i < count; i++) arr.push(defaultName(i));
+  document.getElementById('names').value = arr.join('\n');
+}
+
+document.getElementById('playerCount').addEventListener('input', () => {
+  const count = Math.max(0, parseInt(document.getElementById('playerCount').value, 10) || 0);
+  const current = document.getElementById('names').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const next = [];
+  for (let i = 0; i < count; i++) next.push(current[i] || defaultName(i));
+  document.getElementById('names').value = next.join('\n');
+  generateAndRenderNew();
+});
+document.getElementById('rounds').addEventListener('input', generateAndRenderNew);
+document.getElementById('courts').addEventListener('input', generateAndRenderNew);
+document.getElementById('names').addEventListener('input', generateAndRenderNew);
+document.getElementById('reshuffle').addEventListener('click', generateAndRenderNew);
+
+document.querySelectorAll('.step-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.getAttribute('data-target');
+    const delta = parseInt(btn.getAttribute('data-delta'), 10);
+    const input = document.getElementById(targetId);
+    const min = input.min !== '' ? parseInt(input.min, 10) : -Infinity;
+    const max = input.max !== '' ? parseInt(input.max, 10) : Infinity;
+    const current = parseInt(input.value, 10) || 0;
+    const next = Math.min(max, Math.max(min, current + delta));
+    input.value = next;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+});
+
+document.getElementById('output').addEventListener('input', (e) => {
+  if (!e.target.classList.contains('score-input')) return;
+  const round = e.target.getAttribute('data-round');
+  const court = e.target.getAttribute('data-court');
+  const team = e.target.getAttribute('data-team'); // "team1" or "team2"
+  const key = round + '-' + court;
+  if (!matchResults[key]) matchResults[key] = {};
+  matchResults[key][team] = e.target.value;
+  renderStandings();
+});
+
+function showStatus(msg) {
+  const el = document.getElementById('saveStatus');
+  if (!el) return;
+  el.textContent = msg;
+  clearTimeout(showStatus._t);
+  showStatus._t = setTimeout(() => { el.textContent = ''; }, 3000);
+}
+
+function saveState() {
+  if (!currentResult) return;
+  const rounds = document.getElementById('rounds').value;
+  const payload = {
+    names: currentNames,
+    rounds: rounds,
+    schedule: currentResult.scheduleRounds,
+    courtsUsed: currentResult.courtsUsed,
+    courtsAvailable: currentResult.courtsAvailable,
+    partnerRepeats: currentResult.partnerRepeats,
+    oppRepeats: currentResult.oppRepeats,
+    sitSpread: currentResult.sitSpread,
+    matchResults: matchResults
+  };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    showStatus('Results saved on this device.');
+  } catch (e) {
+    showStatus('Could not save — storage may be unavailable.');
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+document.getElementById('saveResults').addEventListener('click', saveState);
+
+document.getElementById('downloadTool').addEventListener('click', () => {
+  const blob = new Blob([ORIGINAL_HTML], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'doubles-tournament-organiser.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('resetAll').addEventListener('click', () => {
+  matchResults = {};
+  localStorage.removeItem(STORAGE_KEY);
+  if (currentResult) {
+    renderScheduleUI(currentResult, currentNames);
+  }
+  showStatus('Results cleared.');
+});
+
+const saved = loadState();
+if (saved && saved.names && saved.schedule) {
+  document.getElementById('playerCount').value = saved.names.length;
+  document.getElementById('rounds').value = saved.rounds || 12;
+  document.getElementById('courts').value = saved.courtsAvailable || saved.courtsUsed || 2;
+  document.getElementById('names').value = saved.names.join('\n');
+  matchResults = saved.matchResults || {};
+  const restoredResult = {
+    scheduleRounds: saved.schedule,
+    courtsUsed: saved.courtsUsed,
+    courtsAvailable: saved.courtsAvailable || saved.courtsUsed,
+    partnerRepeats: saved.partnerRepeats || 0,
+    oppRepeats: saved.oppRepeats || 0,
+    sitSpread: saved.sitSpread || 0
+  };
+  renderScheduleUI(restoredResult, saved.names);
+  showStatus('Loaded your saved results.');
+} else {
+  initNames();
+  generateAndRenderNew();
+}
+</script>
+</body>
+</html>
