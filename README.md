@@ -2,7 +2,7 @@
 
 A free, single-file tool for running a doubles round-robin at a tennis or padel club. It builds a fair rota across 1 to 6 courts, gives everyone new partners and opponents wherever possible, shares rest time evenly, and keeps a live points table.
 
-**Live version:** https://YOUR-USERNAME.github.io/YOUR-REPOSITORY-NAME/
+**Live version:** https://timcoker100-prog.github.io/doubles-tournament-organiser/
 
 ## What it does
 
