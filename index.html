@@ -222,19 +222,55 @@
   .note { font-size: 12px; color: var(--muted-light); margin-top: 14px; line-height: 1.5; }
   .empty { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 24px; color: var(--muted); font-size: 14px; }
 
-  .court-cell { display: flex; flex-direction: column; gap: 6px; }
-  .matchup { white-space: nowrap; }
-  .score-row { display: flex; align-items: center; gap: 6px; }
+  .court-cell { display: flex; flex-direction: column; gap: 4px; min-width: 190px; }
+  .court-label { display: none; }
+  td.round-cell, td.resting { padding-top: 16px; }
+  .team-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .team-name { flex: 1; line-height: 1.3; }
+  .vs-line { color: var(--clay); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
   input.score-input {
-    width: 52px;
-    font-size: 13px;
-    padding: 4px 6px;
+    width: 56px;
+    font-size: 14px;
+    padding: 5px 6px;
     border: 1px solid #D7D2C2;
-    border-radius: 5px;
+    border-radius: 6px;
     text-align: center;
+    background: white;
   }
-  input.score-input:focus { outline: none; border-color: var(--green); }
-  .score-dash { color: var(--muted); font-weight: 600; }
+  input.score-input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 2px rgba(31,58,46,0.15); }
+
+  /* ---- Phone layout: each round becomes its own card, each team on its own row ---- */
+  @media (max-width: 640px) {
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat { min-width: 0; }
+
+    .table-wrap { background: transparent; border: none; border-radius: 0; overflow: visible; }
+    .table-wrap table, .table-wrap thead, .table-wrap tbody, .table-wrap tr, .table-wrap td { display: block; width: 100%; }
+    .table-wrap thead { display: none; }
+    .table-wrap tr, .table-wrap tr.stripe {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .table-wrap td { padding: 12px 14px; }
+    .table-wrap td + td { border-top: 1px solid var(--border); }
+    .table-wrap td.round-cell { background: var(--green); color: white; font-size: 15px; padding: 10px 14px; }
+    .round-cell strong::before { content: "Round "; font-weight: 600; }
+
+    .court-cell { min-width: 0; gap: 6px; }
+    .court-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    .team-name { font-size: 15px; font-weight: 600; }
+    .vs-line { padding-left: 2px; }
+    input.score-input { width: 76px; min-height: 46px; font-size: 20px; font-weight: 700; color: var(--green); }
+
+    .table-wrap td.resting { font-size: 13px; background: #FAFAF7; }
+    .table-wrap td.resting::before { content: "Resting: "; font-weight: 700; color: var(--ink); }
+
+    .standings-wrap { overflow-x: auto; }
+    .standings-wrap th, .standings-wrap td { padding: 10px 8px; }
+  }
 
   .standings-title { font-size: 16px; font-weight: 700; margin: 28px 0 10px; color: var(--green); }
   .standings-wrap { background: white; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
@@ -597,7 +633,7 @@ function renderScheduleUI(result, names) {
 
   result.scheduleRounds.forEach((round, i) => {
     html += '<tr class="' + (i % 2 === 1 ? 'stripe' : '') + '">';
-    html += '<td><strong>' + (i + 1) + '</strong></td>';
+    html += '<td class="round-cell"><strong>' + (i + 1) + '</strong></td>';
     round.courts.forEach((court, ci) => {
       const t1 = court.team1.map(p => escapeHtml(names[p])).join(' &amp; ');
       const t2 = court.team2.map(p => escapeHtml(names[p])).join(' &amp; ');
@@ -605,13 +641,12 @@ function renderScheduleUI(result, names) {
       const saved = matchResults[key] || {};
       const v1 = saved.team1 !== undefined ? saved.team1 : '';
       const v2 = saved.team2 !== undefined ? saved.team2 : '';
+      const inputAttrs = ' type="number" inputmode="numeric" class="score-input" min="0" placeholder="0" data-round="' + i + '" data-court="' + ci + '"';
       html += '<td><div class="court-cell">';
-      html += '<div class="matchup">' + t1 + '<span class="vs">vs</span>' + t2 + '</div>';
-      html += '<div class="score-row">';
-      html += '<input type="number" class="score-input" min="0" placeholder="0" value="' + v1 + '" data-round="' + i + '" data-court="' + ci + '" data-team="team1">';
-      html += '<span class="score-dash">–</span>';
-      html += '<input type="number" class="score-input" min="0" placeholder="0" value="' + v2 + '" data-round="' + i + '" data-court="' + ci + '" data-team="team2">';
-      html += '</div>';
+      html += '<div class="court-label">Court ' + (ci + 1) + '</div>';
+      html += '<div class="team-row"><span class="team-name">' + t1 + '</span><input' + inputAttrs + ' value="' + v1 + '" data-team="team1" aria-label="Round ' + (i + 1) + ' court ' + (ci + 1) + ' score for ' + t1.replace(/&amp;/g, 'and') + '"></div>';
+      html += '<div class="vs-line">vs</div>';
+      html += '<div class="team-row"><span class="team-name">' + t2 + '</span><input' + inputAttrs + ' value="' + v2 + '" data-team="team2" aria-label="Round ' + (i + 1) + ' court ' + (ci + 1) + ' score for ' + t2.replace(/&amp;/g, 'and') + '"></div>';
       html += '</div></td>';
     });
     const resting = round.sitting.length ? round.sitting.map(p => escapeHtml(names[p])).join(', ') : '—';
